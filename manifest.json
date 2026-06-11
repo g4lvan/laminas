@@ -1,0 +1,26 @@
+{
+  "name": "Álbum Mundial 2026",
+  "short_name": "Mi Álbum 2026",
+  "description": "Aplicación premium para el control, gestión e intercambio de láminas del Álbum Mundial 2026.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f0e11",
+  "theme_color": "#1e1b24",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192-v2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512-v2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
+

@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#111311">
+
+    <title>Álbum Mundial 2026</title>
+    <style>
+        /* Variables de diseño - Tema FIFA World Cup 2026 Dark */
+        :root {
+            --bg-color: #111311;
+            --surface-color: #1c1f1c;
+            --surface-accent: #2a2e2a;
+            --primary-color: #2ecc71;
+            --text-primary: #f0f0f0;
+            --text-secondary: #888888;
+            --nav-height: 65px;
+
+            /* Colores para estados de láminas */
+            --status-obtained: #2ecc71;
+            --status-missing: #e05252;
+            --bg-obtained: rgba(46, 204, 113, 0.10);
+            --bg-missing: rgba(224, 82, 82, 0.10);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--surface-color);
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 10;
+            border-bottom: 1px solid var(--surface-accent);
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: calc(var(--nav-height) + 72px + env(safe-area-inset-bottom, 0px));
+        }
+
+        .view {
+            display: none;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .view h2 {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+            color: var(--primary-color);
+        }
+
+        .view .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        /* Contenedor de Secciones en Álbum */
+        .sections-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        /* Tarjeta de cada Sección/País */
+        .section-card {
+            background-color: var(--surface-color);
+            border-radius: 12px;
+            padding: 12px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 6px;
+            border: 1px solid var(--surface-accent);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            min-height: 100px;
+        }
+
+        .section-card:active {
+            background-color: var(--surface-accent);
+        }
+
+        .section-card .section-flag {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+
+        .section-info .section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 0;
+        }
+
+        .section-info .section-badge {
+            display: none;
+        }
+
+        .section-counter {
+            font-size: 0.75rem;
+            color: var(--primary-color);
+            font-weight: 700;
+            text-align: center;
+        }
+
+        /* Estilos de la vista de láminas */
+        .btn-back {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-back:active {
+            background-color: rgba(46, 204, 113, 0.08);
+        }
+
+        .stickers-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .sticker-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--surface-accent);
+            border-radius: 10px;
+            padding: 10px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sticker-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            width: 100%;
+        }
+
+        .sticker-code {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .sticker-status {
+            font-size: 0.6rem;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .sticker-card.is-obtained {
+            background-color: rgba(46, 204, 113, 0.08);
+            border-color: rgba(46, 204, 113, 0.25);
+        }
+
+        .sticker-status.obtained {
+            background-color: var(--bg-obtained);
+            color: var(--status-obtained);
+        }
+
+        .sticker-status.missing {
+            background-color: var(--bg-missing);
+            color: var(--status-missing);
+        }
+
+        .sticker-rep {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+        }
+
+        .sticker-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 4px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-action {
+            background-color: var(--surface-accent);
+            border: 1px solid transparent;
+            color: var(--text-primary);
+            padding: 5px 4px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-action.active-obtained {
+            border-color: var(--status-obtained);
+            color: var(--status-obtained);
+            background-color: rgba(46, 204, 113, 0.05);
+        }
+
+        .btn-action.active-missing {
+            border-color: var(--status-missing);
+            color: var(--status-missing);
+            background-color: rgba(224, 82, 82, 0.05);
+        }
+
+        .counter-control {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background-color: var(--surface-accent);
+            padding: 2px 4px;
+            border-radius: 4px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-qty {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0 4px;
+            width: 24px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qty-val {
+            font-size: 0.85rem;
+            font-weight: 600;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* Navegación Inferior */
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
+            background-color: var(--surface-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 0;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+            z-index: 10;
+            border-top: 1px solid var(--surface-accent);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .nav-btn .icon {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+
+        .nav-btn .label {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .nav-btn.active {
+            color: var(--primary-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Mundial 2026</h1>
+    </header>
+
+    <main>
+        <section id="album" class="view active">
+            
+            <div id="album-sections-view">
+                <h2>Álbum Oficial</h2>
+                <p class="subtitle">Estructura por grupos y secciones basadas en la plantilla</p>
+                
+                <div class="global-progress-card" style="background-color: var(--surface-color); padding: 16px; border-radius: 12px; border: 1px solid var(--surface-accent); margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 600; margin-bottom: 8px;">
+                        <span>Colección completada</span>
+                        <span id="global-progress-text" style="color: var(--primary-color);">0 / 0 (0.0%)</span>
+                    </div>
+                    <div style="background-color: var(--surface-accent); height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div id="global-progress-bar" style="background-color: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+
+                <div class="search-container" style="margin-bottom: 16px;">
+                    <input type="text" id="search-input" placeholder="Buscar por código (ej: BRA7), prefijo o país..." style="width: 100%; padding: 12px 16px; background-color: var(--surface-color); border: 1px solid var(--surface-accent); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem; outline: none; box-sizing: border-box; transition: border-color 0.2s;" oninput="ejecutarBusquedaInteligente()">
+                </div>
+
+                <div id="sections-list" class="sections-container"></div>
+            </div>
+
+            <div id="album-stickers-view" style="display: none;">
+                <button id="back-to-sections" class="btn-back">← Volver a Secciones</button>
+                <h2 id="current-section-title">País</h2>
+                <p class="subtitle" id="current-section-subtitle">Láminas correspondientes</p>
+                <div id="stickers-list" class="stickers-container"></div>
+            </div>
+
+        </section>
+
+        <section id="stats" class="view">
+            <h2>Estadísticas</h2>
+            <p class="subtitle">Progreso general de recolección</p>
+            <div class="stats-container" style="display: flex; flex-direction: column; gap: 16px;">
+
+                <!-- Grupo 1: Métricas principales en grid 2x2 -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <div class="section-card" style="cursor: default; min-height: 90px; gap: 4px;">
+                        <div style="font-size: 1.6rem;">📋</div>
+                        <div id="stat-total" style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary); line-height: 1;">0</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">Total</div>
+                    </div>
+                    <div class="section-card" style="cursor: default; min-height: 90px; gap: 4px;">
+                        <div style="font-size: 1.6rem;">✅</div>
+                        <div id="stat-obtained" style="font-size: 1.4rem; font-weight: 700; color: var(--status-obtained); line-height: 1;">0</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">Obtenidas</div>
+                    </div>
+                    <div class="section-card" style="cursor: default; min-height: 90px; gap: 4px;">
+                        <div style="font-size: 1.6rem;">❌</div>
+                        <div id="stat-missing" style="font-size: 1.4rem; font-weight: 700; color: var(--status-missing); line-height: 1;">0</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">Faltantes</div>
+                    </div>
+                    <div class="section-card" style="cursor: default; min-height: 90px; gap: 4px;">
+                        <div style="font-size: 1.6rem;">🔄</div>
+                        <div id="stat-repeated" style="font-size: 1.4rem; font-weight: 700; color: var(--text-secondary); line-height: 1;">0</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">Repetidas</div>
+                    </div>
+                </div>
+
+                <!-- Grupo 2: Progreso global -->
+                <div class="section-card" style="cursor: default; flex-direction: column; align-items: stretch; gap: 10px; min-height: auto; text-align: left;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.2rem;">🏆</span>
+                            <span style="font-size: 0.9rem; font-weight: 600;">Completitud global</span>
+                        </div>
+                        <span id="stat-percent" style="font-size: 1.1rem; font-weight: 700; color: var(--primary-color);">0.0%</span>
+                    </div>
+                    <div style="background-color: var(--surface-accent); height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div id="stat-percent-bar" style="background-color: var(--primary-color); height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 4px;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary);">
+                        <span id="stat-percent-label-left">0 obtenidas</span>
+                        <span id="stat-percent-label-right">0 faltantes</span>
+                    </div>
+                </div>
+
+                <!-- Grupo 3: Estado de secciones en grid 2x2 -->
+                <div>
+                    <p style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Estado de secciones</p>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <div class="section-card" style="cursor: default; min-height: 90px; gap: 4px;">
+                            <div style="font-size: 1.6rem;">🟢</div>
+                            <div id="stat-sec-completed" style="font-size: 1.4rem; font-weight: 700; color: var(--status-obtained); line-height: 1;">0</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">Completas</div>
+                        </div>
+                        <div class="section-card" style="cursor: default; min-height: 90px; gap: 4px;">
+                            <div style="font-size: 1.6rem;">🟡</div>
+                            <div id="stat-sec-started" style="font-size: 1.4rem; font-weight: 700; color: var(--primary-color); line-height: 1;">0</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">Iniciadas</div>
+                        </div>
+                        <div class="section-card" style="cursor: default; min-height: 90px; gap: 4px;">
+                            <div style="font-size: 1.6rem;">🔴</div>
+                            <div id="stat-sec-empty" style="font-size: 1.4rem; font-weight: 700; color: var(--status-missing); line-height: 1;">0</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">Vacías</div>
+                        </div>
+                        <div class="section-card" style="cursor: default; min-height: 90px; gap: 4px;">
+                            <div style="font-size: 1.6rem;">📊</div>
+                            <div id="stat-sec-avg" style="font-size: 1.4rem; font-weight: 700; color: var(--primary-color); line-height: 1;">0.0%</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); text-align: center;">Promedio</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grupo 4: Extremos -->
+                <div>
+                    <p style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Destacados</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div class="section-card" style="flex-direction: row; align-items: center; justify-content: space-between; min-height: auto; text-align: left; cursor: default; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                <span style="font-size: 1.4rem; flex-shrink: 0;">🥇</span>
+                                <div style="min-width: 0;">
+                                    <div style="font-size: 0.78rem; color: var(--text-secondary);">Más avanzada</div>
+                                    <div id="stat-most-advanced-name" style="font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                                </div>
+                            </div>
+                            <div id="stat-most-advanced-val" style="font-size: 1.1rem; font-weight: 700; color: var(--status-obtained); flex-shrink: 0;">0.0%</div>
+                        </div>
+                        <div class="section-card" style="flex-direction: row; align-items: center; justify-content: space-between; min-height: auto; text-align: left; cursor: default; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                <span style="font-size: 1.4rem; flex-shrink: 0;">🪨</span>
+                                <div style="min-width: 0;">
+                                    <div style="font-size: 0.78rem; color: var(--text-secondary);">Menos avanzada</div>
+                                    <div id="stat-least-advanced-name" style="font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                                </div>
+                            </div>
+                            <div id="stat-least-advanced-val" style="font-size: 1.1rem; font-weight: 700; color: var(--status-missing); flex-shrink: 0;">0.0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grupo 5: Copia de seguridad -->
+                <div class="section-card" style="cursor: default; flex-direction: column; align-items: stretch; gap: 12px; min-height: auto;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.2rem;">💾</span>
+                        <span style="font-size: 0.9rem; font-weight: 600;">Copia de seguridad</span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="btn-export" class="btn-action" style="flex: 1; padding: 12px; text-align: center; border: 1px solid var(--primary-color); color: var(--primary-color); background: transparent; font-weight: 600; border-radius: 6px;" onclick="exportarColeccionJSON()">📥 Exportar</button>
+                        <button id="btn-import-trigger" class="btn-action" style="flex: 1; padding: 12px; text-align: center; background-color: var(--surface-accent); font-weight: 600; border-radius: 6px;" onclick="document.getElementById('import-file').click()">📤 Importar</button>
+                        <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importarColeccionJSON(event)">
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="trades" class="view">
+            <h2>Intercambios</h2>
+            <p class="subtitle">Gestión de duplicados con otros usuarios</p>
+            
+            <div style="margin-bottom: 24px;">
+                <h3 style="font-size: 1.1rem; color: var(--status-obtained); margin-bottom: 10px; font-weight: 600;">Mis Repetidas (Mayor a menor cantidad)</h3>
+                <div id="repeated-list" class="stickers-container"></div>
+                <p id="no-repeated-msg" style="color: var(--text-secondary); font-size: 0.9rem; padding: 12px; background-color: var(--surface-color); border-radius: 8px; border: 1px solid var(--surface-accent); display: none;">No tienes láminas repetidas en este momento.</p>
+            </div>
+
+            <div>
+                <h3 style="font-size: 1.1rem; color: var(--status-missing); margin-bottom: 10px; font-weight: 600;">Mis Faltantes (Lista de ayuda rápida)</h3>
+                <div id="missing-compact-list" style="display: flex; flex-wrap: wrap; gap: 6px; background-color: var(--surface-color); padding: 14px; border-radius: 12px; border: 1px solid var(--surface-accent);"></div>
+                <p id="no-missing-msg" style="color: var(--text-secondary); font-size: 0.9rem; padding: 12px; background-color: var(--surface-color); border-radius: 8px; border: 1px solid var(--surface-accent); display: none;">¡Enhorabuena! Has completado la totalidad de tu álbum.</p>
+            </div>
+        </section>
+    </main>
+
+        <!-- Barra de Navegación Inferior con SVGs de Alta Compatibilidad -->
+    <nav>
+        <button class="nav-btn active" data-target="album">
+            <span class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; display: block;">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+            </span>
+            <span class="label" style="margin-top: 4px;">Álbum</span>
+        </button>
+        <button class="nav-btn" data-target="stats">
+            <span class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; display: block;">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+            </span>
+            <span class="label" style="margin-top: 4px;">Estadísticas</span>
+        </button>
+        <button class="nav-btn" data-target="trades">
+            <span class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; display: block;">
+                    <path d="m16 3 4 4-4 4"/>
+                    <path d="M20 7H4"/>
+                    <path d="m8 21-4-4 4-4"/>
+                    <path d="M4 17h16"/>
+                </svg>
+            </span>
+            <span class="label" style="margin-top: 4px;">Intercambios</span>
+        </button>
+    </nav>
+
+    
+    <script>
+
+        // 1. Configuración de secciones del álbum corregida
+        const configuracionSecciones = {
+            "FWC": { nombre: "FIFA World Cup", cantidad: 20, inicio: 0 },
+            "MEX": { nombre: "México", cantidad: 20 },
+            "RSA": { nombre: "Sudáfrica", cantidad: 20 },
+            "KOR": { nombre: "Corea del Sur", cantidad: 20 },
+            "CZE": { nombre: "República Checa", cantidad: 20 },
+            "CAN": { nombre: "Canadá", cantidad: 20 },
+            "BIH": { nombre: "Bosnia y Herzegovina", cantidad: 20 },
+            "QAT": { nombre: "Catar", cantidad: 20 },
+            "SUI": { nombre: "Suiza", cantidad: 20 },
+            "BRA": { nombre: "Brasil", cantidad: 20 },
+            "MAR": { nombre: "Marruecos", cantidad: 20 },
+            "HAI": { nombre: "Haití", cantidad: 20 },
+            "SCO": { nombre: "Escocia", cantidad: 20 },
+            "USA": { nombre: "Estados Unidos", cantidad: 20 },
+            "PAR": { nombre: "Paraguay", cantidad: 20 },
+            "AUS": { nombre: "Australia", cantidad: 20 },
+            "TUR": { nombre: "Turquía", cantidad: 20 },
+            "GER": { nombre: "Alemania", cantidad: 20 },
+            "CUW": { nombre: "Curazao", cantidad: 20 },
+            "CIV": { nombre: "Costa de Marfil", cantidad: 20 },
+            "ECU": { nombre: "Ecuador", cantidad: 20 },
+            "NED": { nombre: "Países Bajos", cantidad: 20 },
+            "JPN": { nombre: "Japón", cantidad: 20 },
+            "SWE": { nombre: "Suecia", cantidad: 20 },
+            "TUN": { nombre: "Túnez", cantidad: 20 },
+            "BEL": { nombre: "Bélgica", cantidad: 20 },
+            "EGY": { nombre: "Egipto", cantidad: 20 },
+            "IRN": { nombre: "Irán", cantidad: 20 },
+            "NZL": { font: "inherit", nombre: "Nueva Zelanda", cantidad: 20 },
+            "ESP": { nombre: "España", cantidad: 20 },
+            "CPV": { nombre: "Cabo Verde", cantidad: 20 },
+            "KSA": { nombre: "Arabia Saudita", cantidad: 20 },
+            "URU": { nombre: "Uruguay", cantidad: 20 },
+            "FRA": { nombre: "Francia", cantidad: 20 },
+            "SEN": { nombre: "Senegal", cantidad: 20 },
+            "IRQ": { nombre: "Irak", cantidad: 20 },
+            "NOR": { nombre: "Noruega", cantidad: 20 },
+            "ARG": { nombre: "Argentina", cantidad: 20 },
+            "ALG": { nombre: "Argelia", cantidad: 20 },
+            "AUT": { nombre: "Austria", cantidad: 20 },
+            "JOR": { nombre: "Jordania", cantidad: 20 },
+            "POR": { nombre: "Portugal", cantidad: 20 },
+            "COD": { nombre: "R. D. Congo", cantidad: 20 },
+            "UZB": { nombre: "Uzbekistán", cantidad: 20 },
+            "COL": { nombre: "Colombia", cantidad: 20 },
+            "ENG": { nombre: "Inglaterra", cantidad: 20 },
+            "CRO": { nombre: "Croacia", cantidad: 20 },
+            "GHA": { nombre: "Ghana", cantidad: 20 },
+            "PAN": { nombre: "Panamá", cantidad: 20 },
+            "CC":  { nombre: "Coca-Cola Especial", cantidad: 14 }
+        };
+
+        const STORAGE_KEY = 'album_mundial_2026_data';
+
+        // 2. Estado de la aplicación
+        let infoLaminas = [];
+        let prefijoSeccionActiva = null; 
+
+        function guardarEnStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(infoLaminas));
+        }
+
+        // Inicialización robusta con compatibilidad estructural hacia adelante y preservación de progreso
+        function inicializarDatos() {
+            let estructuraActualizada = [];
+            Object.entries(configuracionSecciones).forEach(([prefijo, info]) => {
+                const inicio = info.inicio !== undefined ? info.inicio : 1;
+                for (let i = inicio; i < inicio + info.cantidad; i++) {
+                    estructuraActualizada.push({
+                        codigo: `${prefijo}${i}`,
+                        prefijo: prefijo,
+                        seccion: info.nombre,
+                        obtenida: false,
+                        repetidas: 0
+                    });
+                }
+            });
+
+            const datosGuardados = localStorage.getItem(STORAGE_KEY);
+            if (datosGuardados) {
+                try {
+                    const historico = JSON.parse(datosGuardados);
+                    const mapaHistorico = {};
+                    historico.forEach(l => { if (l.codigo) mapaHistorico[l.codigo] = l; });
+
+                    estructuraActualizada.forEach(lamina => {
+                        if (mapaHistorico[lamina.codigo]) {
+                            lamina.obtenida = mapaHistorico[lamina.codigo].obtenida;
+                            lamina.repetidas = mapaHistorico[lamina.codigo].repetidas;
+                            // Forzar la consistencia estricta del modelo de datos
+                            if (!lamina.obtenida) lamina.repetidas = 0;
+                        }
+                    });
+                } catch (e) {
+                    console.error("Inconsistencia al recuperar la sesión local previa, re-indexando de forma segura.", e);
+                }
+            }
+            infoLaminas = estructuraActualizada;
+            guardarEnStorage();
+            actualizarProgresoGlobal();
+        }
+
+        // 3. Renderizadores Optimizados del Listado de Secciones con Barras de Progreso Individuales
+
+        // Mapa de prefijos Panini → código ISO 3166-1 alpha-2 para flagcdn.com SVG
+        const banderasISO = {
+            "MEX": "mx", "RSA": "za", "KOR": "kr", "CZE": "cz",
+            "CAN": "ca", "BIH": "ba", "QAT": "qa", "SUI": "ch", "BRA": "br",
+            "MAR": "ma", "HAI": "ht", "USA": "us", "PAR": "py",
+            "AUS": "au", "TUR": "tr", "GER": "de", "CUW": "cw", "CIV": "ci",
+            "ECU": "ec", "NED": "nl", "JPN": "jp", "SWE": "se", "TUN": "tn",
+            "BEL": "be", "EGY": "eg", "IRN": "ir", "NZL": "nz", "ESP": "es",
+            "CPV": "cv", "KSA": "sa", "URU": "uy", "FRA": "fr", "SEN": "sn",
+            "IRQ": "iq", "NOR": "no", "ARG": "ar", "ALG": "dz", "AUT": "at",
+            "JOR": "jo", "POR": "pt", "COD": "cd", "UZB": "uz", "COL": "co",
+            "CRO": "hr", "GHA": "gh", "PAN": "pa"
+        };
+
+        // SVGs inline para casos especiales sin código ISO estándar en flagcdn
+        const svgsEspeciales = {
+            "FWC": `<svg viewBox="0 0 32 24" xmlns="http://www.w3.org/2000/svg" style="width:2rem;height:1.5rem;border-radius:3px;display:block;">
+                <rect width="32" height="24" fill="#1c1f1c"/>
+                <text x="16" y="17" text-anchor="middle" font-size="14">🏆</text>
+            </svg>`,
+            "SCO": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" style="width:2rem;height:1rem;border-radius:3px;display:block;box-shadow:0 1px 3px rgba(0,0,0,0.3);">
+                <rect width="60" height="30" fill="#003399"/>
+                <line x1="0" y1="0" x2="60" y2="30" stroke="white" stroke-width="6"/>
+                <line x1="60" y1="0" x2="0" y2="30" stroke="white" stroke-width="6"/>
+            </svg>`,
+            "ENG": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 36" style="width:2rem;height:1.2rem;border-radius:3px;display:block;box-shadow:0 1px 3px rgba(0,0,0,0.3);">
+                <rect width="60" height="36" fill="white"/>
+                <rect x="24" y="0" width="12" height="36" fill="#CF091C"/>
+                <rect x="0" y="12" width="60" height="12" fill="#CF091C"/>
+            </svg>`,
+            "CC": `<svg viewBox="0 0 32 24" xmlns="http://www.w3.org/2000/svg" style="width:2rem;height:1.5rem;border-radius:3px;display:block;">
+                <rect width="32" height="24" fill="#f40009"/>
+                <text x="16" y="17" text-anchor="middle" font-size="13">🥤</text>
+            </svg>`
+        };
+
+        function renderBandera(prefijo) {
+            // Casos especiales con SVG inline
+            if (svgsEspeciales[prefijo]) {
+                return `<span style="display:block;line-height:0;">${svgsEspeciales[prefijo]}</span>`;
+            }
+            // Resto de países vía flagcdn.com (SVG)
+            const iso = banderasISO[prefijo];
+            if (!iso) return `<span style="font-size:1.4rem;">🏳️</span>`;
+            return `<img 
+                src="https://flagcdn.com/${iso}.svg" 
+                alt="${prefijo}" 
+                style="width:2rem;height:1.5rem;border-radius:3px;display:block;box-shadow:0 1px 3px rgba(0,0,0,0.3);object-fit:cover;"
+                onerror="this.style.display='none'"
+            >`;
+        }
+
+        function renderizarSecciones() {
+            const filtro = document.getElementById('search-input') ? document.getElementById('search-input').value.trim().toLowerCase() : '';
+            renderizarSeccionesConFiltro(filtro);
+        }
+
+        function renderizarSeccionesConFiltro(filtro) {
+            const contenedor = document.getElementById('sections-list');
+            contenedor.innerHTML = '';
+
+            Object.entries(configuracionSecciones).forEach(([prefijo, info]) => {
+                const laminasDeSeccion = infoLaminas.filter(l => l.prefijo === prefijo);
+                const obtenidas = laminasDeSeccion.filter(l => l.obtenida).length;
+                const porcentajeSeccion = info.cantidad > 0 ? ((obtenidas / info.cantidad) * 100) : 0;
+
+                const coincideNombre = info.nombre.toLowerCase().includes(filtro);
+                const coincidePrefijo = prefijo.toLowerCase().includes(filtro);
+                const coincideLamina = laminasDeSeccion.some(l => l.codigo.toLowerCase() === filtro);
+
+                if (filtro !== "" && !coincideNombre && !coincidePrefijo && !coincideLamina) {
+                    return;
+                }
+
+                const tarjeta = document.createElement('div');
+                tarjeta.className = 'section-card';
+
+                tarjeta.innerHTML = `
+                    <div class="section-flag">${renderBandera(prefijo)}</div>
+                    <div class="section-info">
+                        <div class="section-title">${info.nombre}</div>
+                    </div>
+                    <div class="section-counter">${obtenidas}/${info.cantidad}</div>
+                    <div style="background-color: var(--surface-accent); height: 4px; border-radius: 2px; overflow: hidden; width: 100%;">
+                        <div style="background-color: var(--primary-color); height: 100%; width: ${porcentajeSeccion}%; transition: width 0.25s ease;"></div>
+                    </div>
+                `;
+
+                tarjeta.addEventListener('click', () => abrirSeccion(prefijo));
+                contenedor.appendChild(tarjeta);
+            });
+        }
+
+        function abrirSeccion(prefijo) {
+            prefijoSeccionActiva = prefijo;
+            document.getElementById('album-sections-view').style.display = 'none';
+            document.getElementById('album-stickers-view').style.display = 'block';
+            document.querySelector('main').scrollTop = 0;
+            renderizarLaminas();
+        }
+
+        function regresarASecciones() {
+            prefijoSeccionActiva = null;
+            document.getElementById('album-stickers-view').style.display = 'none';
+            document.getElementById('album-sections-view').style.display = 'block';
+            renderizarSecciones();
+            actualizarProgresoGlobal();
+        }
+    
+        // 4. Renderizador del Detalle de Láminas por Sección
+        function renderizarLaminas() {
+            if (!prefijoSeccionActiva) return;
+
+            const info = configuracionSecciones[prefijoSeccionActiva];
+            document.getElementById('current-section-title').textContent = info.nombre;
+            document.getElementById('current-section-subtitle').textContent = `Láminas con prefijo ${prefijoSeccionActiva}`;
+
+            const contenedor = document.getElementById('stickers-list');
+            contenedor.innerHTML = '';
+
+            const laminasFiltradas = infoLaminas.filter(l => l.prefijo === prefijoSeccionActiva);
+
+            laminasFiltradas.forEach(lamina => {
+                const tarjeta = document.createElement('div');
+                tarjeta.className = `sticker-card${lamina.obtenida ? ' is-obtained' : ''}`;
+
+                const estadoTexto = lamina.obtenida ? 'Obtenida' : 'Faltante';
+                const estadoClase = lamina.obtenida ? 'obtained' : 'missing';
+
+                tarjeta.innerHTML = `
+                    <div class="sticker-meta">
+                        <span class="sticker-code">${lamina.codigo}</span>
+                        <span class="sticker-status ${estadoClase}">${estadoTexto}</span>
+                        <span class="sticker-rep">Repetidas: ${lamina.repetidas}</span>
+                    </div>
+                    <div class="sticker-actions">
+                        <div class="action-row">
+                            <button class="btn-action ${lamina.obtenida ? 'active-obtained' : ''}" data-action="obtener">✓ Tengo</button>
+                            <button class="btn-action ${!lamina.obtenida ? 'active-missing' : ''}" data-action="faltar">✕ No tengo</button>
+                        </div>
+                        <div class="action-row">
+                            <div class="counter-control">
+                                <button class="btn-qty" data-action="restar">-</button>
+                                <span class="qty-val">${lamina.repetidas}</span>
+                                <button class="btn-qty" data-action="sumar">+</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Manejo reactivo de flujos y consistencia de datos inmediatos
+                tarjeta.querySelector('[data-action="obtener"]').addEventListener('click', () => {
+                    if (!lamina.obtenida) {
+                        lamina.obtenida = true;
+                        guardarEnStorage();
+                        renderizarLaminas();
+                    }
+                });
+
+                tarjeta.querySelector('[data-action="faltar"]').addEventListener('click', () => {
+                    lamina.obtenida = false;
+                    lamina.repetidas = 0; // Garantizar consistencia: faltante implica 0 repetidas
+                    guardarEnStorage();
+                    renderizarLaminas();
+                });
+
+                tarjeta.querySelector('[data-action="sumar"]').addEventListener('click', () => {
+                    lamina.repetidas++;
+                    lamina.obtenida = true; 
+                    guardarEnStorage();
+                    renderizarLaminas();
+                });
+
+                tarjeta.querySelector('[data-action="restar"]').addEventListener('click', () => {
+                    if (lamina.repetidas > 0) {
+                        lamina.repetidas--;
+                        guardarEnStorage();
+                        renderizarLaminas();
+                    }
+                });
+
+                contenedor.appendChild(tarjeta);
+            });
+        }
+                // ==========================================
+        // SISTEMA DE BÚSQUEDA OPTIMIZADO (DEBOUNCE + SCROLL + RESALTADO)
+        // ==========================================
+        
+        // 1. Función Antirrebote (Debounce)
+        function debounce(funcion, retraso) {
+            let temporizador;
+            return function (...args) {
+                clearTimeout(temporizador);
+                temporizador = setTimeout(() => {
+                    funcion.apply(this, args);
+                }, retraso);
+            };
+        }
+        
+        const inputBusqueda = document.getElementById('search-input'); 
+        
+        // 2. Lógica central de procesamiento (Versión final con Scroll y Resaltado)
+        const procesarBusqueda = (valor) => {
+            const filtro = valor.trim().toUpperCase(); 
+            
+            // Filtrado en tiempo real en la lista principal
+            renderizarSeccionesConFiltro(filtro.toLowerCase());
+        
+            if (filtro === "") return;
+        
+            // Buscar si escribió un cromo exacto (ej: COL15)
+            const laminaExacta = infoLaminas.find(l => l.codigo.toUpperCase() === filtro);
+            
+            if (laminaExacta) {
+                // Limpiar el buscador tras encontrarla
+                inputBusqueda.value = '';
+                
+                // Abrir la sección correspondiente
+                abrirSeccion(laminaExacta.prefijo);
+        
+                // Esperar 150ms a que el DOM pinte las láminas para poder interactuar con ellas
+                setTimeout(() => {
+                    const tarjetasLaminas = document.querySelectorAll('.sticker-card');
+                    
+                    tarjetasLaminas.forEach(tarjeta => {
+                        const elementoCodigo = tarjeta.querySelector('.sticker-code');
+                        
+                        if (elementoCodigo && elementoCodigo.textContent.toUpperCase() === filtro) {
+                            // Desplazar la pantalla suavemente hasta centrar la tarjeta
+                            tarjeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+                            // Aplicar el efecto visual premium (brillo neón y escala)
+                            tarjeta.style.transition = 'outline 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease';
+                            tarjeta.style.outline = '2px solid var(--primary-color)';
+                            tarjeta.style.boxShadow = '0 0 20px var(--primary-color)';
+                            tarjeta.style.transform = 'scale(1.02)';
+        
+                            // Apagar el efecto a los 4 segundos
+                            setTimeout(() => {
+                                tarjeta.style.outline = 'none';
+                                tarjeta.style.boxShadow = 'none';
+                                tarjeta.style.transform = 'scale(1)';
+                            }, 4000);
+                        }
+                    });
+                }, 150);
+            }
+        };
+        
+        // 3. Escuchar la escritura con espera de 400ms
+        inputBusqueda.addEventListener('input', debounce((event) => {
+            procesarBusqueda(event.target.value);
+        }, 400));
+        
+        // 4. Escuchar la tecla Enter para buscar de inmediato
+        inputBusqueda.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                procesarBusqueda(event.target.value);
+            }
+        });
+
+
+        // 6. Módulo Centralizado de Cómputo de Métricas e Indicadores Globales
+        function actualizarProgresoGlobal() {
+            const total = infoLaminas.length;
+            const obtenidas = infoLaminas.filter(l => l.obtenida).length;
+            const porcentaje = total > 0 ? ((obtenidas / total) * 100).toFixed(1) : "0.0";
+            
+            document.getElementById('global-progress-text').textContent = `${obtenidas} / ${total} (${porcentaje}%)`;
+            document.getElementById('global-progress-bar').style.width = `${porcentaje}%`;
+        }
+
+        function calcularYMostrarEstadisticas() {
+            const total = infoLaminas.length;
+            const obtenidas = infoLaminas.filter(l => l.obtenida).length;
+            const faltantes = total - obtenidas;
+            const porcentajeGlobal = total > 0 ? ((obtenidas / total) * 100).toFixed(1) : "0.0";
+            const totalRepetidas = infoLaminas.reduce((acc, curr) => acc + curr.repetidas, 0);
+
+            let seccionesCompletadas = 0;
+            let seccionesIniciadas = 0;
+            let seccionesVacias = 0;
+            let sumaPorcentajes = 0;
+
+            let maxPorcentaje = -1;
+            let minPorcentaje = 101;
+            let seccionMaxNombre = "Ninguna";
+            let seccionMinNombre = "Ninguna";
+
+            const totalSecciones = Object.keys(configuracionSecciones).length;
+
+            Object.entries(configuracionSecciones).forEach(([prefijo, info]) => {
+                const laminasDeSeccion = infoLaminas.filter(l => l.prefijo === prefijo);
+                const obs = laminasDeSeccion.filter(l => l.obtenida).length;
+                const pct = (obs / info.cantidad) * 100;
+                
+                sumaPorcentajes += pct;
+
+                if (obs === info.cantidad) {
+                    seccionesCompletadas++;
+                } else if (obs === 0) {
+                    seccionesVacias++;
+                } else {
+                    seccionesIniciadas++;
+                }
+
+                if (pct > maxPorcentaje) {
+                    maxPorcentaje = pct;
+                    seccionMaxNombre = `${info.nombre} (${obs}/${info.cantidad})`;
+                }
+                if (pct < minPorcentaje) {
+                    minPorcentaje = pct;
+                    seccionMinNombre = `${info.nombre} (${obs}/${info.cantidad})`;
+                }
+            });
+
+            const promedioCompletitud = totalSecciones > 0 ? (sumaPorcentajes / totalSecciones).toFixed(1) : "0.0";
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-obtained').textContent = obtenidas;
+            document.getElementById('stat-missing').textContent = faltantes;
+            document.getElementById('stat-percent').textContent = `${porcentajeGlobal}%`;
+            document.getElementById('stat-percent-bar').style.width = `${porcentajeGlobal}%`;
+            document.getElementById('stat-percent-label-left').textContent = `${obtenidas} obtenidas`;
+            document.getElementById('stat-percent-label-right').textContent = `${faltantes} faltantes`;
+            document.getElementById('stat-repeated').textContent = totalRepetidas;
+            
+            document.getElementById('stat-sec-completed').textContent = seccionesCompletadas;
+            document.getElementById('stat-sec-started').textContent = seccionesIniciadas;
+            document.getElementById('stat-sec-empty').textContent = seccionesVacias;
+            document.getElementById('stat-sec-avg').textContent = `${promedioCompletitud}%`;
+
+            document.getElementById('stat-most-advanced-name').textContent = seccionMaxNombre;
+            document.getElementById('stat-most-advanced-val').textContent = `${maxPorcentaje.toFixed(1)}%`;
+            document.getElementById('stat-least-advanced-name').textContent = seccionMinNombre;
+            document.getElementById('stat-least-advanced-val').textContent = `${minPorcentaje.toFixed(1)}%`;
+        }
+
+        // 7. Panel Dinámico de Intercambios (Repetidas Clasificadas y Faltantes Compactas)
+        function calcularYMostrarIntercambios() {
+            const contenedorRepetidas = document.getElementById('repeated-list');
+            const msgNoRepetidas = document.getElementById('no-repeated-msg');
+            contenedorRepetidas.innerHTML = '';
+
+            // Filtrar y ordenar láminas repetidas de forma descendente (mayor a menor cantidad)
+            const listadoRepetidas = infoLaminas.filter(l => l.repetidas > 0).sort((a, b) => b.repetidas - a.repetidas);
+
+            if (listadoRepetidas.length === 0) {
+                msgNoRepetidas.style.display = 'block';
+            } else {
+                msgNoRepetidas.style.display = 'none';
+                listadoRepetidas.forEach(lamina => {
+                    const tarjeta = document.createElement('div');
+                    tarjeta.className = 'sticker-card';
+                    tarjeta.style.cssText = 'flex-direction: row; justify-content: space-between; align-items: center;';
+                    tarjeta.innerHTML = `
+                        <div class="sticker-meta" style="align-items: flex-start;">
+                            <span class="sticker-code">${lamina.codigo}</span>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">${lamina.seccion}</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 1.15rem; font-weight: bold; color: var(--primary-color);">${lamina.repetidas}</span>
+                            <small style="display: block; color: var(--text-secondary); font-size: 0.7rem;">unidades</small>
+                        </div>
+                    `;
+                    contenedorRepetidas.appendChild(tarjeta);
+                });
+            }
+
+            const contenedorFaltantes = document.getElementById('missing-compact-list');
+            const msgNoFaltantes = document.getElementById('no-missing-msg');
+            contenedorFaltantes.innerHTML = '';
+
+            const listadoFaltantes = infoLaminas.filter(l => !l.obtenida);
+
+            if (listadoFaltantes.length === 0) {
+                msgNoFaltantes.style.display = 'block';
+                contenedorFaltantes.style.display = 'none';
+            } else {
+                msgNoFaltantes.style.display = 'none';
+                contenedorFaltantes.style.display = 'flex';
+                listadoFaltantes.forEach(lamina => {
+                    const badge = document.createElement('span');
+                    badge.textContent = lamina.codigo;
+                    badge.style.backgroundColor = 'var(--surface-accent)';
+                    badge.style.color = 'var(--status-missing)';
+                    badge.style.padding = '5px 9px';
+                    badge.style.borderRadius = '6px';
+                    badge.style.fontSize = '0.78rem';
+                    badge.style.fontWeight = '600';
+                    badge.style.border = '1px solid rgba(224, 82, 82, 0.2)';
+                    contenedorFaltantes.appendChild(badge);
+                });
+            }
+        }
+
+        // 8. Utilidades de Importación y Exportación de Archivos JSON
+        function exportarColeccionJSON() {
+            try {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(infoLaminas));
+                const linkDescarga = document.createElement('a');
+                linkDescarga.setAttribute("href", dataStr);
+                linkDescarga.setAttribute("download", `album_2026_backup_${new Date().toISOString().slice(0,10)}.json`);
+                document.body.appendChild(linkDescarga);
+                linkDescarga.click();
+                linkDescarga.remove();
+            } catch (err) {
+                alert("Error al intentar generar la exportación de los datos.");
+            }
+        }
+
+        function importarColeccionJSON(event) {
+            const archivo = event.target.files[0];
+            if (!archivo) return;
+
+            const lector = new FileReader();
+            lector.onload = function(e) {
+                try {
+                    const datosImportados = JSON.parse(e.target.result);
+                    if (Array.isArray(datosImportados)) {
+                        const mapaImportado = {};
+                        datosImportados.forEach(l => { if (l.codigo) mapaImportado[l.codigo] = l; });
+
+                        // Combinar datos manteniendo resiliencia estructural completa frente a cambios de versión
+                        infoLaminas.forEach(lamina => {
+                            if (mapaImportado[lamina.codigo] !== undefined) {
+                                lamina.obtenida = !!mapaImportado[lamina.codigo].obtenida;
+                                lamina.repetidas = parseInt(mapaImportado[lamina.codigo].repetidas, 10) || 0;
+                                if (!lamina.obtenida) lamina.repetidas = 0; // Imponer consistencia
+                            }
+                        });
+
+                        guardarEnStorage();
+                        actualizarProgresoGlobal();
+                        renderizarSecciones();
+                        alert("¡Colección importada con éxito! Progreso restaurado de forma segura.");
+                    } else {
+                        alert("El archivo seleccionado no cumple con el formato estándar de colección.");
+                    }
+                } catch (err) {
+                    alert("Error crítico al procesar la lectura del archivo JSON.");
+                }
+                // Limpiar el input file para permitir cargas seguidas del mismo archivo
+                event.target.value = '';
+            };
+            lector.readAsText(archivo);
+        }
+
+        if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js');
+    });
+}
+    
+        // 9. Enrutamiento Móvil General de Pestañas e Inicialización Principal
+        document.addEventListener('DOMContentLoaded', () => {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const views = document.querySelectorAll('.view');
+
+            inicializarDatos();
+            renderizarSecciones();
+
+            document.getElementById('back-to-sections').addEventListener('click', regresarASecciones);
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.getAttribute('data-target');
+
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    views.forEach(view => view.classList.remove('active'));
+
+                    button.classList.add('active');
+                    document.getElementById(targetId).classList.add('active');
+
+                    // Carga condicionada por demanda para optimizar renderizados y rendimiento CPU/Batería
+                    if (targetId === 'album') {
+                        if (prefijoSeccionActiva) {
+                            renderizarLaminas();
+                        } else {
+                            renderizarSecciones();
+                            actualizarProgresoGlobal();
+                        }
+                    } else if (targetId === 'stats') {
+                        calcularYMostrarEstadisticas();
+                    } else if (targetId === 'trades') {
+                        calcularYMostrarIntercambios();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
